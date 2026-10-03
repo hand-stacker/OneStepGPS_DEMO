@@ -102,7 +102,15 @@ func main() {
 		json.NewEncoder(w).Encode(prefs)
 	})
 
+	mux.HandleFunc("GET /api/gps-bulk", func(w http.ResponseWriter, r *http.Request) {
+		if err := getBulkGPSData(w); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	})
+
 	addr := "127.0.0.1:" + port
 	log.Println("listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
+
 }

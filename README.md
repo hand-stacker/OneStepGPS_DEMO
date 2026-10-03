@@ -4,7 +4,7 @@
 ## The app is available at [ip_address] or you can deploy it locally through the instructions below
 
 ## TESTING IN A LOCAL ENV
-to test backend only run 
+to test backend only run this command in the backend folder
 """
     # load .env into this terminal session
     Get-Content .env | ForEach-Object {
@@ -14,8 +14,15 @@ to test backend only run
     }
     go run .
 """
-and the endpoints are
+and the endpoints root is
 "127.0.0.1:ENV_VAR_PORT/"
+
+to test front end make sure the backend is running on the same device, and run this command in the frontend folder
+"""
+    npm run dev
+"""
+and the root url is 
+"http://localhost:5173"
 
 ## BACKEND
 
