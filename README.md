@@ -4,6 +4,18 @@
 ## The app is available at [ip_address] or you can deploy it locally through the instructions below
 
 ## TESTING IN A LOCAL ENV
+to test backend only run 
+"""
+    # load .env into this terminal session
+    Get-Content .env | ForEach-Object {
+        if ($_ -match '^\s*([^#][^=]*)=(.*)$') {
+            Set-Item "env:$($matches[1].Trim())" $matches[2].Trim()
+        }
+    }
+    go run .
+"""
+and the endpoints are
+"127.0.0.1:ENV_VAR_PORT/"
 
 ## BACKEND
 
