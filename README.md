@@ -29,3 +29,4 @@ and the root url is
 ## DATABASE MODELS
 
 ## FRONTEND
+External Libraries : vue3-googlemaps

@@ -26,6 +26,11 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/api/google-maps-key/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"key": getGoogleMapsKey()})
+	})
+
 	// API to get a user preference by ID
 	mux.HandleFunc("GET /api/user-preference/{user_id}", func(w http.ResponseWriter, r *http.Request) {
 		user_id, err := strconv.ParseInt(r.PathValue("user_id"), 10, 64)
@@ -104,6 +109,13 @@ func main() {
 
 	mux.HandleFunc("GET /api/gps-bulk", func(w http.ResponseWriter, r *http.Request) {
 		if err := getBulkGPSData(w); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	})
+
+	mux.HandleFunc("GET /api/device-info", func(w http.ResponseWriter, r *http.Request) {
+		if err := getDeviceInfo(w, r); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}

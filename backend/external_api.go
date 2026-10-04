@@ -13,6 +13,10 @@ import (
 var myClient = &http.Client{}
 var API_KEY = getenv("API_KEY", "DEMO")
 
+func getGoogleMapsKey() string {
+	return getenv("GOOGLE_MAPS_API_KEY", "DEMO")
+}
+
 func getJson(w http.ResponseWriter, url string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -42,4 +46,13 @@ func getBulkGPSData(w http.ResponseWriter) error {
 	(w).Header().Set("Content-Type", "application/json")
 	return getJson(w, "https://track.onestepgps.com/v3/api/public/device")
 
+}
+
+func getDeviceInfo(w http.ResponseWriter, r *http.Request) error {
+	(w).Header().Set("Content-Type", "application/json")
+	url := "https://track.onestepgps.com/v3/api/public/device-info?lat_lng=True&device_id=True&license_plate=True&"
+	// here we add code that filters out blocked devices
+	// blockedDevices, err := store.GetBlockedDeviceIDs(r.Context())
+	// + "&device_id_not_match=" + makeMatchOrRegex(blockedDevices)
+	return getJson(w, url)
 }
