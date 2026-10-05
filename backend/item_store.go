@@ -323,3 +323,24 @@ func (s *ItemStore) UpsertDeviceMarker(ctx context.Context, m *DeviceMarker) err
 		m.UserID, m.DeviceID, m.ContentType, m.Data, m.Ignore)
 	return err
 }
+
+// soft removes a marker by setting ignore, returns sql.ErrNoRows if there was no marker
+func (s *ItemStore) IgnoreDeviceMarker(ctx context.Context, user_id int64, device_id string) error {
+	res, err := s.db.ExecContext(ctx, `
+	UPDATE user_device_markers
+		SET ignore = TRUE
+		WHERE user_id = ?
+		AND device_id = ?`,
+		user_id, device_id)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}

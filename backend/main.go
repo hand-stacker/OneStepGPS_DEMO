@@ -333,6 +333,25 @@ func main() {
 		helperDeviceMarkerUpsert(w, r, 200)
 	})
 
+	// removes a custom marker by setting it to ignore, uploading a new image brings it back
+	mux.HandleFunc("DELETE /api/device-markers/{user_id}/{device_id}", func(w http.ResponseWriter, r *http.Request) {
+		user_id, err := getInt64(r.PathValue("user_id"))
+		if err != nil {
+			throwBadRequest(w, "invalid user_id")
+			return
+		}
+		err = store.IgnoreDeviceMarker(r.Context(), user_id, r.PathValue("device_id"))
+		if errors.Is(err, sql.ErrNoRows) {
+			throwStatusNotFound(w, "device marker not found")
+			return
+		}
+		if err != nil {
+			throwInternalServerError(w, err.Error())
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	})
+
 	/// HERE ARE EXTERNAL API COLLECTIONS
 
 	// gets device data

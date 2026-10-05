@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import type { User, UserSortPreference } from './types'
-import { GoogleMap, MarkerCluster, CustomMarker, InfoWindow } from 'vue3-google-map'
+import { GoogleMap, MarkerCluster, CustomMarker } from 'vue3-google-map'
 import {friendliestNodePos} from './scripts/utils'
 
 const users = ref<User[]>([])
@@ -129,11 +129,107 @@ async function editDeviceNickname(device_id : string, display_name : string, ign
 
 // modifications for content
 
-function findName(device: any ): string {
-  if (device.device_id in deviceNicknames) {
-    return deviceNicknames[device.device_id]
+function findName(device: any): string {
+  return deviceNicknames.value[device.device_id] ?? device.display_name
+}
+
+const DEFAULT_MARKER_URL = 'https://vuejs.org/images/logo.png'
+
+// bumped after every upload so the <img> refetches instead of showing the old image
+const markerVersion = ref(0)
+
+function markerUrl(device_id: string): string {
+  if (devicesWithCustomMarkers.value.includes(device_id)) {
+    return `/api/device-markers/${String(currentUser.value?.user_id)}/${device_id}?v=${markerVersion.value}`
   }
-  return device.display_name
+  return DEFAULT_MARKER_URL
+}
+
+const markerError = ref('')
+
+// backend expects multipart/form-data with the file under 'image'
+async function uploadMarker(device_id: string, event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  const formData = new FormData()
+  formData.append('image', file)
+  const res = await fetch(`/api/device-markers/${String(currentUser.value?.user_id)}/${device_id}`, {
+    method: 'POST',
+    body: formData,
+  })
+  input.value = ''
+  markerError.value = res.ok ? '' : await res.text()
+  markerVersion.value++
+  await loadDeviceIdsWithCustomMarkers()
+}
+
+// sets the marker to ignore on the backend, the default image is shown again
+async function removeMarker(device_id: string) {
+  await fetch(`/api/device-markers/${String(currentUser.value?.user_id)}/${device_id}`, {
+    method: 'DELETE',
+  })
+  await loadDeviceIdsWithCustomMarkers()
+}
+
+// /api/device-info leaves out hidden devices, so remember every device we've
+// seen to still be able to show hidden ones by name
+const knownDevices = ref<Record<string, any>>({})
+
+watch(deviceInfo, (devices) => {
+  for (const d of devices) {
+    knownDevices.value[d.device_id] = d
+  }
+})
+
+const visibleDevices = computed(() =>
+  deviceInfo.value.filter((d) => !hiddenDevices.value.includes(d.device_id))
+)
+
+// every device we know of plus any hidden id we've never seen device info for
+const allDevices = computed(() => {
+  const devices = { ...knownDevices.value }
+  for (const id of hiddenDevices.value) {
+    devices[id] ??= { device_id: id, display_name: id }
+  }
+  return Object.values(devices)
+})
+
+async function setDeviceHidden(device_id: string, hidden: boolean) {
+  if (hidden) {
+    await addHiddenDevice(device_id, false)
+  } else {
+    await editHiddenDevice(device_id, true)
+  }
+  selectedDeviceId.value = null
+  await loadCurrentUser(Number(currentUser.value?.user_id))
+}
+
+// popup opened by clicking a marker
+const selectedDeviceId = ref<string | null>(null)
+const nicknameDraft = ref('')
+
+function openDevicePopup(device: any) {
+  selectedDeviceId.value = device.device_id
+  nicknameDraft.value = deviceNicknames.value[device.device_id] ?? ''
+  markerError.value = ''
+}
+
+function closeDevicePopup() {
+  selectedDeviceId.value = null
+}
+
+// an empty nickname is treated the same as removing it
+async function saveNickname(device_id: string, display_name: string) {
+  const name = display_name.trim()
+  const ignore = name === ''
+  if (device_id in deviceNicknames.value) {
+    await editDeviceNickname(device_id, name, ignore)
+  } else {
+    await addDeviceNickname(device_id, name, ignore)
+  }
+  await loadDeviceNicknames()
+  nicknameDraft.value = name
 }
 
 onMounted(initialLoad)
@@ -173,26 +269,80 @@ onMounted(initialLoad)
     
     <MarkerCluster>
       <CustomMarker
-        v-for="(device, device_id) in deviceInfo"
-        :key="device_id"
+        v-for="device in visibleDevices"
+        :key="device.device_id"
         :options="{ position: { lat: Number(device.lat), lng: Number(device.lng) }, anchorPoint: 'BOTTOM_CENTER' }"
       >
-        <div style="text-align: center">
-          <InfoWindow>
-          <div style="text-align: center">
-            <div style="font-size: 1.125rem; background: #f0f0f0; padding: 4px">{{device.display_name}}</div>
-            <div>Device ID: {{device.device_id}}</div>
-            <div>License Plate: {{device.license_plate}}</div>
-            <div>Last Update: {{device.last_update}}</div>
+        <div class="marker" @click="openDevicePopup(device)">
+          <div
+            v-if="selectedDeviceId === device.device_id"
+            class="device-popup"
+            @click.stop
+            @mousedown.stop
+            @dblclick.stop
+          >
+            <button type="button" class="close" @click="closeDevicePopup">×</button>
+            <div class="marker-label">{{ findName(device) }}</div>
+            <div>Device ID: {{ device.device_id }}</div>
+            <div>License Plate: {{ device.license_plate }}</div>
+            <div>Last Update: {{ device.last_update }}</div>
+
+            <form @submit.prevent="saveNickname(device.device_id, nicknameDraft)">
+              <input v-model="nicknameDraft" placeholder="nickname" />
+              <button>Save</button>
+              <button
+                v-if="device.device_id in deviceNicknames"
+                type="button"
+                @click="saveNickname(device.device_id, '')"
+              >
+                Remove
+              </button>
+            </form>
+
+            <div class="marker-image-options">
+              <label>
+                Custom image:
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif,image/webp"
+                  @change="uploadMarker(device.device_id, $event)"
+                />
+              </label>
+              <button
+                v-if="devicesWithCustomMarkers.includes(device.device_id)"
+                type="button"
+                @click="removeMarker(device.device_id)"
+              >
+                Remove image
+              </button>
+              <div v-if="markerError" class="error">{{ markerError }}</div>
+            </div>
+
+            <button type="button" @click="setDeviceHidden(device.device_id, true)">Hide device</button>
           </div>
-        </InfoWindow>
-          <div style="font-size: 1.125rem; background: #f0f0f0; padding: 4px">{{device.display_name}}</div>
-          <img src="https://vuejs.org/images/logo.png" width="50" height="50" style="margin-top: 8px" />
+
+          <div class="marker-label">{{ findName(device) }}</div>
+          <img :src="markerUrl(device.device_id)" width="50" height="50" style="margin-top: 8px" />
         </div>
-        
       </CustomMarker>
     </MarkerCluster>
   </GoogleMap>
+
+  <section class="hidden-devices">
+    <h3>Hidden devices</h3>
+    <ul>
+      <li v-for="device in allDevices" :key="device.device_id">
+        <label>
+          <input
+            type="checkbox"
+            :checked="hiddenDevices.includes(device.device_id)"
+            @change="setDeviceHidden(device.device_id, ($event.target as HTMLInputElement).checked)"
+          />
+          {{ findName(device) }}
+        </label>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped>
@@ -236,5 +386,51 @@ onMounted(initialLoad)
 
 .user-list li.new-user:hover {
   background: white;
+}
+
+.marker {
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+}
+
+.marker-label {
+  font-size: 1.125rem;
+  background: #f0f0f0;
+  padding: 4px;
+}
+
+.device-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  min-width: 220px;
+  margin-bottom: 8px;
+  padding: 8px;
+  text-align: left;
+  cursor: default;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.device-popup .close {
+  float: right;
+}
+
+.device-popup form,
+.marker-image-options {
+  margin: 8px 0;
+}
+
+.error {
+  color: #c00;
+}
+
+.hidden-devices ul {
+  padding: 0;
+  list-style: none;
 }
 </style>
