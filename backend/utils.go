@@ -1,9 +1,13 @@
 package main
 
 import (
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
+
+var validSortTypes = []string{"asc", "desc"}
 
 func getenv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
@@ -19,4 +23,31 @@ func makeMatchOrRegex(strs []string) string {
 		return ""
 	}
 	return "(" + strings.Join(strs, "|") + ")"
+}
+
+// parses /user_id/ (from a url) into int 64
+func getInt64(s string) (int64, error) {
+	return strconv.ParseInt(s, 10, 64)
+}
+
+func validSortType(s string) bool {
+	for _, v := range validSortTypes {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
+// /// HTTP USEFUL ERROR RETURNS
+func throwBadRequest(w http.ResponseWriter, message string) {
+	http.Error(w, message, http.StatusBadRequest)
+}
+
+func throwStatusNotFound(w http.ResponseWriter, message string) {
+	http.Error(w, message, http.StatusNotFound)
+}
+
+func throwInternalServerError(w http.ResponseWriter, message string) {
+	http.Error(w, message, http.StatusInternalServerError)
 }

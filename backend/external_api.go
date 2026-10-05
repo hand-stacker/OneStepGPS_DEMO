@@ -50,9 +50,16 @@ func getBulkGPSData(w http.ResponseWriter) error {
 
 func getDeviceInfo(w http.ResponseWriter, r *http.Request) error {
 	(w).Header().Set("Content-Type", "application/json")
-	url := "https://track.onestepgps.com/v3/api/public/device-info?lat_lng=True&device_id=True&license_plate=True&"
-	// here we add code that filters out blocked devices
-	// blockedDevices, err := store.GetBlockedDeviceIDs(r.Context())
-	// + "&device_id_not_match=" + makeMatchOrRegex(blockedDevices)
+	url := "https://track.onestepgps.com/v3/api/public/device-info?lat_lng=True&device_id=True&license_plate=True&drive_status=True&drive_status_begin_time=True&drive_status_distance_mi=True&fuel_percent=True&"
+	store, err := NewItemStore()
+	if err != nil {
+		return err
+	}
+	var user_id int64
+	// collect user id somehow
+	user_id = 1
+
+	blockedDevices, err := store.GetHiddenDeviceIDs(r.Context(), user_id)
+	url = url + "&device_id_not_match=" + makeMatchOrRegex(blockedDevices)
 	return getJson(w, url)
 }
