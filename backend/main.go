@@ -66,6 +66,15 @@ func main() {
 			throwInternalServerError(w, err.Error())
 			return
 		}
+		userSortPreference := UserSortPreferences{
+			UserID:    user.UserID,
+			SortOrder: "desc",
+		}
+		err = store.UpsertSortPreference(r.Context(), &userSortPreference)
+		if err != nil {
+			throwInternalServerError(w, err.Error())
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(201)
@@ -245,6 +254,23 @@ func main() {
 
 	mux.HandleFunc("PUT /api/device-nicknames/{user_id}", func(w http.ResponseWriter, r *http.Request) {
 		helperDeviceNicknameUpsert(w, r, 200)
+	})
+
+	// get list of device_ids where user has a custom marker
+	mux.HandleFunc("GET /api/device-markers-list/{user_id}", func(w http.ResponseWriter, r *http.Request) {
+		user_id, err := getInt64(r.PathValue("user_id"))
+		if err != nil {
+			throwBadRequest(w, "invalid user_id")
+			return
+		}
+		ids, err := store.getDeviceWithMarkerIDs(r.Context(), user_id)
+		if err != nil {
+			throwInternalServerError(w, err.Error())
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain")
+		json.NewEncoder(w).Encode(ids)
+
 	})
 
 	// get the custom marker image for a device, returns the raw image bytes

@@ -287,6 +287,30 @@ func (s *ItemStore) GetDeviceMarker(ctx context.Context, user_id int64, device_i
 	}, nil
 }
 
+func (s *ItemStore) getDeviceWithMarkerIDs(ctx context.Context, user_id int64) ([]string, error) {
+	var device_ids []string
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT device_id 
+		FROM user_device_markers
+		WHERE user_id = ?
+		AND ignore = FALSE`, user_id)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var s string
+		if err := rows.Scan(&s); err == nil {
+			device_ids = append(device_ids, s)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return device_ids, nil
+}
+
 func (s *ItemStore) UpsertDeviceMarker(ctx context.Context, m *DeviceMarker) error {
 	_, err := s.db.ExecContext(ctx, `
 	INSERT INTO user_device_markers (user_id, device_id, content_type, data, ignore)

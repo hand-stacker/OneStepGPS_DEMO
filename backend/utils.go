@@ -19,10 +19,17 @@ func getenv(key, fallback string) string {
 // makes a pattern to match exact strings in string array
 // example ['abc', 'def'] -> '(abc|def)'
 func makeMatchOrRegex(strs []string) string {
-	if len(strs) == 0 {
+	// empty strings will match all ids.. if they are or'ed : "(|apple|banana)"
+	var nonEmpty []string
+	for _, s := range strs {
+		if s != "" {
+			nonEmpty = append(nonEmpty, s)
+		}
+	}
+	if len(nonEmpty) == 0 {
 		return ""
 	}
-	return "(" + strings.Join(strs, "|") + ")"
+	return "(" + strings.Join(nonEmpty, "|") + ")"
 }
 
 // parses /user_id/ (from a url) into int 64
