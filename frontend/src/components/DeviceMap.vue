@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { GoogleMap, MarkerCluster, CustomMarker } from 'vue3-google-map'
-import { visibleDevices, center, currentUser, findName, markerUrl } from '../services/api'
+import { visibleDevices, center, centerVersion, currentUser, findName, markerUrl, zoom } from '../services/api'
 import DevicePopup from './DevicePopup.vue'
+
+const mapRef = ref<InstanceType<typeof GoogleMap> | null>(null)
+
+// updates map if centerVersion changes
+watch(centerVersion, () => {
+  const map = mapRef.value?.map
+  if (!map) return
+  map.panTo(center.value)
+  map.setZoom(zoom.value)
+})
 
 // device whose popup is open
 const selectedDeviceId = ref<string | null>(null)
@@ -23,10 +33,11 @@ watch(currentUser, () => {
 
 <template>
   <GoogleMap
+    ref="mapRef"
     class="map"
     api-key="AIzaSyB5TjaHMZtdRyrLxOMRC_iQib4o98nth0M"
     :center="center"
-    :zoom="7"
+    :zoom="zoom"
   >
     <MarkerCluster>
       <CustomMarker

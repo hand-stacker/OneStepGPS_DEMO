@@ -16,10 +16,13 @@ function selectUser(id: number | string) {
   run(() => loadCurrentUser(Number(id)))
 }
 
+// shown under the input when adding a user fails, e.g. the email is already taken
+const addError = ref('')
+
 function pushNewUser() {
   run(async () => {
-    await addUser(email.value)
-    email.value = ''
+    addError.value = await addUser(email.value)
+    if (!addError.value) email.value = ''
   })
 }
 </script>
@@ -41,9 +44,10 @@ function pushNewUser() {
       <li class="form-row">
         <form @submit.prevent="pushNewUser">
           <fieldset :disabled="busy">
-            <input v-model="email" type="email" placeholder="new user email" required />
+            <input v-model="email" type="email" placeholder="new user email" required @input="addError = ''" />
             <button>Add</button>
           </fieldset>
+          <p v-if="addError" class="error">{{ addError }}</p>
         </form>
       </li>
     </ul>

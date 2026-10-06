@@ -62,6 +62,10 @@ func main() {
 			return
 		}
 		err = store.CreateUser(r.Context(), &user)
+		if errors.Is(err, ErrEmailTaken) {
+			throwConflict(w, err.Error())
+			return
+		}
 		if err != nil {
 			throwInternalServerError(w, err.Error())
 			return

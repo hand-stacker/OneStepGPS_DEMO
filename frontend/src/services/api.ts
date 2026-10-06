@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import type { User, UserSortPreference, sort_order } from '../types'
 import { friendliestNodePos } from '../scripts/utils'
+import defaultIcon from '../imgs/default_icon.png'
 
 // app data lives here at module level, so every component that imports it shares the same state.
 // App.vue only reads these values and calls the exported functions below.
@@ -20,11 +21,15 @@ export const deviceNicknames = ref<Record<string, string>>({})
 export const devicesWithCustomMarkers = ref<string[]>([])
 export const GOOGLE_MAPS_API_KEY = ref('DEMO')
 export const center = ref({ lat: 0, lng: 0 })
+export const zoom = ref(7)
+
+// bumped on every centerOnDevice call so the map moves even when center/zoom are unchanged
+export const centerVersion = ref(0)
 
 // bumped after every upload so the <img> refetches instead of showing the old image
 const markerVersion = ref(0)
 
-const DEFAULT_MARKER_URL = 'https://vuejs.org/images/logo.png'
+const DEFAULT_MARKER_URL = defaultIcon
 
 // /api/device-info leaves out hidden devices, so their device_id and display_name
 // come from /api/hidden-device-info instead
@@ -222,11 +227,20 @@ export async function initialLoad() {
 export function centerOnDevice(device: any) {
     if (device.lat == null || device.lng == null) return
     center.value = { lat: Number(device.lat), lng: Number(device.lng) }
+    zoom.value = 15
+    centerVersion.value++
 }
 
-export async function addUser(email: string) {
-    await sendJson('/api/user/', 'POST', { email: email })
+// returns the error text from the backend (e.g. email already taken), or '' if it worked
+export async function addUser(email: string): Promise<string> {
+    const ret = await fetch('/api/user/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email }),
+    })
+    if (!ret.ok) return (await ret.text()).trim()
     await loadUsers()
+    return ''
 }
 
 export async function editPreference(sort_order: sort_order) {

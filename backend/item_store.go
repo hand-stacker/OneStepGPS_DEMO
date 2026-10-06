@@ -3,12 +3,17 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 
-	_ "modernc.org/sqlite"
+	"modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 // reminders: Scan() closes connections so you dont need to call Close()
+
+// returned by CreateUser when another user already has the email
+var ErrEmailTaken = errors.New("a user with that email already exists")
 
 // User model
 type User struct {
@@ -72,6 +77,11 @@ func (s *ItemStore) CreateDB() error {
 		email TEXT NOT NULL)`); err != nil {
 		log.Fatal(err)
 	}
+
+	if _, err := s.db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique
+		ON users (email COLLATE NOCASE)`); err != nil {
+		log.Fatal(err)
+	}
 	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS user_sort_preferences (
 		user_id INTEGER PRIMARY KEY,
 		sort_order TEXT NOT NULL
@@ -130,6 +140,10 @@ func (s *ItemStore) CreateUser(ctx context.Context, u *User) error {
 			VALUES (?)
 			RETURNING user_id`,
 		u.Email).Scan(&userID)
+	var sqliteErr *sqlite.Error
+	if errors.As(err, &sqliteErr) && sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+		return ErrEmailTaken
+	}
 	if err != nil {
 		return err
 	}

@@ -55,6 +55,10 @@ func throwStatusNotFound(w http.ResponseWriter, message string) {
 	http.Error(w, message, http.StatusNotFound)
 }
 
+func throwConflict(w http.ResponseWriter, message string) {
+	http.Error(w, message, http.StatusConflict)
+}
+
 func throwInternalServerError(w http.ResponseWriter, message string) {
 	http.Error(w, message, http.StatusInternalServerError)
 }

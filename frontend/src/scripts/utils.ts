@@ -74,7 +74,7 @@ function formatFuelPercentage(str : string): string {
 }
 
 function formatSpeed(f : Number) {
-    return String(f) + " mph"
+    return String(f.toFixed(2)) + " mph"
 }
 
 export { friendliestNodePos, formatPacificTime, elapsedSince, formatFuelPercentage, formatSpeed }
