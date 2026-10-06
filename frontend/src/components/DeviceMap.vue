@@ -56,7 +56,11 @@ watch(currentUser, () => {
             @close="selectedDeviceId = null"
           />
           <div class="marker-label panel">{{ findName(device) }}</div>
-          <img :src="markerUrl(device.device_id)" width="50" height="50" />
+          <div class="marker-icon">
+            <div v-if="device.drive_status === 'driving'" class="drive-ping"></div>
+            <div v-else-if="device.drive_status === 'idle'" class="idle-glow"></div>
+            <img :src="markerUrl(device.device_id)" width="50" height="50" />
+          </div>
         </div>
       </CustomMarker>
     </MarkerCluster>

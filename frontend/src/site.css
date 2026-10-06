@@ -7,6 +7,8 @@
   --muted: #999;
   --error: #c00;
   --on: #1a7f37;
+  --driving: #00ff66;
+  --idle: #ffd600;
   --shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -192,8 +194,108 @@ fieldset {
   cursor: pointer;
 }
 
-.marker img {
-  margin-top: 8px;
+/* wraps the image so the drive ping can center on it */
+.marker-icon {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  margin: 8px auto 0;
+}
+
+.marker-icon img {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+/* green ripple behind a driving device, centered on its image.
+   absolutely positioned so it doesn't shift the marker's BOTTOM_CENTER anchor */
+.drive-ping {
+  position: absolute;
+  inset: 0;
+}
+
+.drive-ping::before,
+.drive-ping::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 6px solid var(--driving);
+  background: rgba(0, 255, 102, 0.2);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+    0 0 8px var(--driving);
+  animation: drive-ping 1.8s ease-out infinite;
+}
+
+.drive-ping::after {
+  animation-delay: 0.9s;
+}
+
+@keyframes drive-ping {
+  from {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+@property --idle-edge {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --idle-center {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0.15;
+}
+
+/* yellow glow behind an idle device. 
+  slow glow in and out.*/
+.idle-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(255, 214, 0, var(--idle-center)) 0%,
+    rgba(255, 214, 0, var(--idle-center)) 62.5%,
+    rgba(255, 214, 0, var(--idle-edge)) 100%
+  );
+  transform: scale(1.6);
+  animation: idle-glow 1.3s ease-in-out infinite alternate;
+}
+
+@keyframes idle-glow {
+  from {
+    --idle-edge: 0;
+    --idle-center: 0.35;
+  }
+  to {
+    --idle-edge: 0.35;
+    --idle-center: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drive-ping::before,
+  .drive-ping::after {
+    animation: none;
+    opacity: 0;
+  }
+
+  .idle-glow {
+    animation: none;
+    --idle-edge: 0.075;
+    --idle-center: 0.075;
+  }
 }
 
 .marker-label {
