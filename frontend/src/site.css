@@ -1,0 +1,259 @@
+:root {
+  --border: #ddd;
+  --row-border: #eee;
+  --hover-bg: #f0f0f0;
+  --accent: #1a4fa0;
+  --accent-bg: #e6f0ff;
+  --muted: #999;
+  --error: #c00;
+  --on: #1a7f37;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ---- layout ----
+   map takes 70% on the left with the sidebar next to it,
+   on small screens the sidebar drops below a full width map */
+
+.navbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.layout {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+.map {
+  flex: 0 0 70%;
+  height: 75vh;
+  min-height: 400px;
+}
+
+.sidebar {
+  flex: 1;
+  min-width: 0;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+/* reload and sort buttons share a row above the table */
+.sidebar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .map {
+    flex-basis: auto;
+    width: 100%;
+    height: 60vh;
+  }
+
+  .sidebar {
+    max-height: none;
+  }
+}
+
+/* ---- shared pieces ---- */
+
+/* white floating box used by dropdowns and the device popup */
+.panel {
+  background: white;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.btn {
+  padding: 6px 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* any control that's waiting on a request: faded, with the loading cursor on hover */
+button:disabled,
+input:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* groups controls so they can all be disabled at once, without the default box */
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* toggle buttons, e.g. auto-reload on/off */
+.btn.on {
+  color: var(--on);
+  border-color: var(--on);
+}
+
+.btn.off {
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* button that looks like a link */
+.link {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--accent);
+  text-align: left;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+/* digits keep the same width so ticking times don't jiggle */
+.pill,
+.device-table td:nth-child(3) {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.error {
+  color: var(--error);
+}
+
+/* ---- dropdowns (user menu, sort) ---- */
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  z-index: 10;
+  min-width: 200px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dropdown-menu li {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.dropdown-menu li:hover,
+.dropdown-menu li.active {
+  background: var(--hover-bg);
+}
+
+/* the add-user form row isn't a selectable option */
+.dropdown-menu li.form-row {
+  cursor: default;
+  border-top: 1px solid var(--border);
+  background: none;
+}
+
+/* ---- map markers and popup ---- */
+
+.marker {
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+}
+
+.marker img {
+  margin-top: 8px;
+}
+
+.marker-label {
+  font-size: 1.125rem;
+  background: var(--hover-bg);
+  padding: 4px;
+}
+
+.device-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  min-width: 220px;
+  margin-bottom: 8px;
+  padding: 8px;
+  text-align: left;
+  cursor: default;
+}
+
+.device-popup .close {
+  float: right;
+}
+
+.device-popup form,
+.device-popup .section {
+  margin: 8px 0;
+}
+
+/* ---- device table ---- */
+
+.device-table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.device-table th,
+.device-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--row-border);
+}
+
+.device-table th {
+  position: sticky;
+  top: 0;
+  background: white;
+  border-bottom-color: var(--border);
+}
+
+/* hide checkbox column */
+.device-table th:last-child,
+.device-table td:last-child {
+  text-align: center;
+}
+
+.device-table tr.hidden td {
+  color: var(--muted);
+}

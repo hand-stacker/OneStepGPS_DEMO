@@ -48,18 +48,43 @@ func getBulkGPSData(w http.ResponseWriter) error {
 
 }
 
-func getDeviceInfo(w http.ResponseWriter, r *http.Request) error {
+// device info for every device the user hasn't hidden
+func getDeviceInfo(w http.ResponseWriter, r *http.Request, user_id int64) error {
 	(w).Header().Set("Content-Type", "application/json")
-	url := "https://track.onestepgps.com/v3/api/public/device-info?lat_lng=True&device_id=True&license_plate=True&drive_status=True&drive_status_begin_time=True&drive_status_distance_mi=True&fuel_percent=True&speed_mph=True"
+	// so long
+	url := "https://track.onestepgps.com/v3/api/public/device-info?lat_lng=True&device_id=True&license_plate=True&drive_status=True&drive_status_begin_time=True&drive_status_distance_mi=True&fuel_percent=True&honored_gps_time=True&speed_mph=True&ev_charge_percent=True"
 	store, err := NewItemStore()
 	if err != nil {
 		return err
 	}
-	var user_id int64
-	// collect user id somehow
-	user_id = 1
 
 	blockedDevices, err := store.GetHiddenDeviceIDs(r.Context(), user_id)
+	if err != nil {
+		return err
+	}
 	url = url + "&device_id_not_match=" + makeMatchOrRegex(blockedDevices)
+	return getJson(w, url)
+}
+
+// device_id and display_name for each device the user has hidden
+func getHiddenDeviceInfo(w http.ResponseWriter, r *http.Request, user_id int64) error {
+	(w).Header().Set("Content-Type", "application/json")
+	// so short
+	url := "https://track.onestepgps.com/v3/api/public/device-info?device_id=True"
+	store, err := NewItemStore()
+	if err != nil {
+		return err
+	}
+
+	blockedDevices, err := store.GetHiddenDeviceIDs(r.Context(), user_id)
+	if err != nil {
+		return err
+	}
+	// an empty match pattern could match every device, so skip the call when nothing is hidden
+	if len(blockedDevices) == 0 {
+		_, err = w.Write([]byte("[]"))
+		return err
+	}
+	url = url + "&device_id_match=" + makeMatchOrRegex(blockedDevices)
 	return getJson(w, url)
 }

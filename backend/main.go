@@ -362,10 +362,28 @@ func main() {
 		}
 	})
 
-	// gets specific api info (see getDeviceInfo for explanation)
-	mux.HandleFunc("GET /api/device-info", func(w http.ResponseWriter, r *http.Request) {
-		if err := getDeviceInfo(w, r); err != nil {
-			http.Error(w, err.Error(), 500)
+	// gets device info for the user's visible devices (see getDeviceInfo)
+	mux.HandleFunc("GET /api/device-info/{user_id}", func(w http.ResponseWriter, r *http.Request) {
+		user_id, err := getInt64(r.PathValue("user_id"))
+		if err != nil {
+			throwBadRequest(w, "invalid user_id")
+			return
+		}
+		if err := getDeviceInfo(w, r, user_id); err != nil {
+			throwInternalServerError(w, err.Error())
+			return
+		}
+	})
+
+	// gets device_id and display_name for each of the user's hidden devices (see getHiddenDeviceInfo)
+	mux.HandleFunc("GET /api/hidden-device-info/{user_id}", func(w http.ResponseWriter, r *http.Request) {
+		user_id, err := getInt64(r.PathValue("user_id"))
+		if err != nil {
+			throwBadRequest(w, "invalid user_id")
+			return
+		}
+		if err := getHiddenDeviceInfo(w, r, user_id); err != nil {
+			throwInternalServerError(w, err.Error())
 			return
 		}
 	})

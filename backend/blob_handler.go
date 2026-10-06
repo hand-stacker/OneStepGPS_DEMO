@@ -30,7 +30,7 @@ var allowedMarkerTypes = map[string]bool{
 var errMarkerTooLarge = fmt.Errorf("image must be %d MB or smaller", maxMarkerBytes>>20)
 
 // reads the image out of a multipart/form-data request
-// returns the raw bytes and the sniffed content type (we dont trust the client's header)
+// returns the raw bytes and the sniffed content type
 func readMarkerImage(w http.ResponseWriter, r *http.Request) ([]byte, string, error) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxMarkerBytes+multipartOverheadBytes)
 
