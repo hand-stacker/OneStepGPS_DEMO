@@ -20,6 +20,9 @@ const now = useNow()
 const nicknameDraft = ref(deviceNicknames.value[props.device.device_id] ?? '')
 const markerError = ref('')
 
+// false shows the device's data, true shows the nickname / image / hide options
+const showSettings = ref(false)
+
 function onSaveNickname(display_name: string) {
   run(async () => {
     nicknameDraft.value = await saveNickname(props.device.device_id, display_name)
@@ -48,22 +51,36 @@ function onHide() {
 
 <template>
   <div ref="root" class="device-popup panel shady-border" @click.stop @mousedown.stop @dblclick.stop>
-    <button type="button" class="close light-shady-border" aria-label="Close" title="Close" @click="emit('close')">×</button>
+    <div class="popup-actions">
+      <button
+        type="button"
+        class="light-shady-border"
+        :aria-pressed="showSettings"
+        :title="showSettings ? 'Show device info' : 'Show device settings'"
+        @click="showSettings = !showSettings"
+      >
+        {{ showSettings ? 'Info' : 'Settings' }}
+      </button>
+      <button type="button" class="close light-shady-border" aria-label="Close" title="Close" @click="emit('close')">×</button>
+    </div>
     <div class="marker-label">{{ findName(device) }}</div>
-    <div>
-      Status: {{ device.drive_status }}
-      <span v-if="device.drive_status_begin_time" class="pill">
-        {{ elapsedSince(device.drive_status_begin_time, now) }}
-      </span>
-    </div>
-    <div v-if="device.drive_status === 'driving'">
-      <div>Speed : {{ formatSpeed(device.speed_mph) }}</div>
-      <div>Drive Distance: {{ Number(device.drive_status_distance_mi).toFixed(2) }} mi</div>
-    </div>
-    <div>Last Update: {{ formatPacificTime(device.honored_gps_time) }}</div>
-    <div>Fuel Percent : {{ formatFuelPercentage(device.fuel_percent) }}</div>
 
-    <fieldset :disabled="busy">
+    <template v-if="!showSettings">
+      <div>
+        Status: {{ device.drive_status }}
+        <span v-if="device.drive_status_begin_time" class="pill">
+          {{ elapsedSince(device.drive_status_begin_time, now) }}
+        </span>
+      </div>
+      <div v-if="device.drive_status === 'driving'">
+        <div>Speed : {{ formatSpeed(device.speed_mph) }}</div>
+        <div>Drive Distance: {{ Number(device.drive_status_distance_mi).toFixed(2) }} mi</div>
+      </div>
+      <div>Last Update: {{ formatPacificTime(device.honored_gps_time) }}</div>
+      <div>Fuel Percent : {{ formatFuelPercentage(device.fuel_percent) }}</div>
+    </template>
+
+    <fieldset v-else :disabled="busy">
       <form @submit.prevent="onSaveNickname(nicknameDraft)">
         <input v-model="nicknameDraft" placeholder="Add a nickname" />
         <button class="light-shady-border">Save nickname</button>

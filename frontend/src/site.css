@@ -3,6 +3,7 @@
   --background-secondary: rgb(236, 237, 229);
   --background-tertiary: rgb(151, 150, 163);
   --background-interactible: rgb(151, 146, 202);
+  --background-red : rgb(189, 151, 110);
   --background-pink : rgb(187, 116, 128);
   --background-yellow: rgba(196, 191, 132, 0.676);
   --background-orange: rgb(215, 169, 84);
@@ -384,8 +385,12 @@ fieldset {
   background: none;
 }
 
-.device-popup .close {
+/* settings/info toggle and close button, side by side in the top right corner */
+.device-popup .popup-actions {
   float: right;
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
 }
 
 .device-popup form,
