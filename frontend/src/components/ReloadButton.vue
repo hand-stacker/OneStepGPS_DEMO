@@ -45,22 +45,24 @@ onUnmounted(stopTimer)
 <template>
   <button
     type="button"
-    class="btn"
+    class="btn light-shady-border"
     :disabled="refreshingDevices"
-    title="Reload now"
+    title="Refresh device locations now"
     @click="refreshDevices()"
   >
     <span :class="{ spin: refreshingDevices }">⟳</span>
-    <span class="pill">{{ lastDeviceRefresh ? elapsedSince(lastDeviceRefresh, now) + ' ago' : 'never' }}</span>
+    Refresh
+    <span class="pill">{{ lastDeviceRefresh ? 'Updated ' + elapsedSince(lastDeviceRefresh, now) + ' ago' : 'Not loaded yet' }}</span>
   </button>
 
   <button
     type="button"
-    class="btn"
+    class="btn light-shady-border"
     :class="autoReload ? 'on' : 'off'"
     :aria-pressed="autoReload"
+    title="Refresh device locations every 30 seconds"
     @click="autoReload = !autoReload"
   >
-    {{ autoReload ? '● auto-reload: on' : '○ auto-reload: off' }}
+    {{ autoReload ? 'Auto-refresh: On' : 'Auto-refresh: Off' }}
   </button>
 </template>

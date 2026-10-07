@@ -129,6 +129,13 @@ body {
     0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
+/* softer version of shady-border for smaller controls like buttons */
+.light-shady-border {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
 .btn {
   padding: 6px 10px;
   background: var(--background-interactible);
@@ -151,8 +158,11 @@ fieldset {
   border: none;
 }
 
-/* toggle buttons, e.g. auto-reload on/off */
-
+/* toggle buttons, e.g. auto-reload on/off. off goes dark so it reads as switched off */
+.btn.off {
+  background: var(--background-tertiary);
+  color: white;
+}
 
 .spin {
   display: inline-block;
@@ -386,6 +396,13 @@ fieldset {
 .device-popup button,
 .device-popup input[type='file']::file-selector-button {
   background-color: var(--background-interactible);
+}
+
+/* the browse button can't take a class, so it copies light-shady-border here */
+.device-popup input[type='file']::file-selector-button {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* ---- device table ---- */

@@ -12,7 +12,7 @@ const { busy, run } = useBusy()
 useClickOutside(() => root.value, () => { open.value = false })
 
 const label = computed(() =>
-  userSortPreference.value?.sort_order === 'asc' ? 'ascending' : 'descending'
+  userSortPreference.value?.sort_order === 'asc' ? 'Recently changed' : 'Longest in status'
 )
 
 function choose(order: sort_order) {
@@ -23,15 +23,15 @@ function choose(order: sort_order) {
 
 <template>
   <div ref="root" class="dropdown">
-    <button type="button" class="btn" :disabled="busy" @click="open = !open">
-      Sort : {{ label }} ▾
+    <button type="button" class="btn light-shady-border" :disabled="busy" @click="open = !open">
+      Sort: {{ label }} ▾
     </button>
     <ul v-if="open" class="dropdown-menu panel shady-border">
       <li :class="{ active: userSortPreference?.sort_order === 'asc' }" @click="choose('asc')">
-        Sort ascending
+        Recently changed first
       </li>
       <li :class="{ active: userSortPreference?.sort_order === 'desc' }" @click="choose('desc')">
-        Sort descending
+        Longest in status first
       </li>
     </ul>
   </div>

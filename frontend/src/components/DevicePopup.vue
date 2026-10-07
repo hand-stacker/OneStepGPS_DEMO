@@ -48,7 +48,7 @@ function onHide() {
 
 <template>
   <div ref="root" class="device-popup panel shady-border" @click.stop @mousedown.stop @dblclick.stop>
-    <button type="button" class="close" @click="emit('close')">×</button>
+    <button type="button" class="close light-shady-border" aria-label="Close" title="Close" @click="emit('close')">×</button>
     <div class="marker-label">{{ findName(device) }}</div>
     <div>
       Status: {{ device.drive_status }}
@@ -65,20 +65,21 @@ function onHide() {
 
     <fieldset :disabled="busy">
       <form @submit.prevent="onSaveNickname(nicknameDraft)">
-        <input v-model="nicknameDraft" placeholder="nickname" />
-        <button>Save</button>
+        <input v-model="nicknameDraft" placeholder="Add a nickname" />
+        <button class="light-shady-border">Save nickname</button>
         <button
           v-if="device.device_id in deviceNicknames"
           type="button"
+          class="light-shady-border"
           @click="onSaveNickname('')"
         >
-          Remove
+          Clear nickname
         </button>
       </form>
 
       <div class="section">
         <label>
-          Custom image:
+          Marker image:
           <input
             type="file"
             accept="image/png,image/jpeg,image/gif,image/webp"
@@ -88,14 +89,15 @@ function onHide() {
         <button
           v-if="devicesWithCustomMarkers.includes(device.device_id)"
           type="button"
+          class="light-shady-border"
           @click="onRemoveMarker"
         >
-          Remove image
+          Use default image
         </button>
         <div v-if="markerError" class="error">{{ markerError }}</div>
       </div>
 
-      <button type="button" @click="onHide">Hide device</button>
+      <button type="button" class="light-shady-border" @click="onHide">Hide from map</button>
     </fieldset>
   </div>
 </template>

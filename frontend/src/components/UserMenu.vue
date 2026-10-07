@@ -29,8 +29,8 @@ function pushNewUser() {
 
 <template>
   <div ref="root" class="dropdown">
-    <button type="button" class="btn" :disabled="busy" @click="open = !open">
-      {{ currentUser?.email ?? 'Select user' }} ▾
+    <button type="button" class="btn light-shady-border" :disabled="busy" @click="open = !open">
+      {{ currentUser?.email ?? 'Choose account' }} ▾
     </button>
     <ul v-if="open" class="dropdown-menu panel shady-border">
       <li
@@ -44,8 +44,8 @@ function pushNewUser() {
       <li class="form-row">
         <form @submit.prevent="pushNewUser">
           <fieldset :disabled="busy">
-            <input v-model="email" type="email" placeholder="new user email" required @input="addError = ''" />
-            <button>Add</button>
+            <input v-model="email" type="email" placeholder="New user's email" required @input="addError = ''" />
+            <button class="btn light-shady-border">Add user</button>
           </fieldset>
           <p v-if="addError" class="error">{{ addError }}</p>
         </form>
