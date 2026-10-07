@@ -27,7 +27,9 @@ onMounted(initialLoad)
         <ReloadButton />
         <SortButton />
       </div>
-      <DeviceTable />
+      <div class="sidebar-table">
+        <DeviceTable />
+      </div>
     </aside>
   </main>
 </template>
