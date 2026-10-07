@@ -32,7 +32,7 @@ function pushNewUser() {
     <button type="button" class="btn" :disabled="busy" @click="open = !open">
       {{ currentUser?.email ?? 'Select user' }} ▾
     </button>
-    <ul v-if="open" class="dropdown-menu panel">
+    <ul v-if="open" class="dropdown-menu panel shady-border">
       <li
         v-for="u in users"
         :key="u.user_id"

@@ -22,7 +22,7 @@ onMounted(initialLoad)
   <main class="layout">
     <DeviceMap />
 
-    <aside class="sidebar">
+    <aside class="sidebar shady-border">
       <div class="sidebar-controls">
         <ReloadButton />
         <SortButton />

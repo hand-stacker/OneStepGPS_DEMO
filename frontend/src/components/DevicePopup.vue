@@ -47,8 +47,7 @@ function onHide() {
 </script>
 
 <template>
-  <!-- stop events so clicks and drags inside the popup don't reach the map -->
-  <div ref="root" class="device-popup panel" @click.stop @mousedown.stop @dblclick.stop>
+  <div ref="root" class="device-popup panel shady-border" @click.stop @mousedown.stop @dblclick.stop>
     <button type="button" class="close" @click="emit('close')">×</button>
     <div class="marker-label">{{ findName(device) }}</div>
     <div>

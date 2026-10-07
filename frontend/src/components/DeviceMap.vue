@@ -34,7 +34,7 @@ watch(currentUser, () => {
 <template>
   <GoogleMap
     ref="mapRef"
-    class="map"
+    class="map shady-border"
     api-key="AIzaSyB5TjaHMZtdRyrLxOMRC_iQib4o98nth0M"
     :center="center"
     :zoom="zoom"
@@ -55,7 +55,7 @@ watch(currentUser, () => {
             :device="device"
             @close="selectedDeviceId = null"
           />
-          <div class="marker-label panel">{{ findName(device) }}</div>
+          <div class="marker-label panel shady-border">{{ findName(device) }}</div>
           <div class="marker-icon">
             <div v-if="device.drive_status === 'driving'" class="drive-ping"></div>
             <div v-else-if="device.drive_status === 'idle'" class="idle-glow"></div>

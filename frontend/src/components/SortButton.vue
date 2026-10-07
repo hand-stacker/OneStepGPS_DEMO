@@ -26,7 +26,7 @@ function choose(order: sort_order) {
     <button type="button" class="btn" :disabled="busy" @click="open = !open">
       Sort : {{ label }} ▾
     </button>
-    <ul v-if="open" class="dropdown-menu panel">
+    <ul v-if="open" class="dropdown-menu panel shady-border">
       <li :class="{ active: userSortPreference?.sort_order === 'asc' }" @click="choose('asc')">
         Sort ascending
       </li>
